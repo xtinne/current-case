@@ -10,8 +10,12 @@ import {
 } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import {
+  IonBadge,
+  IonButton,
+  IonButtons,
   IonContent,
   IonHeader,
+  IonIcon,
   IonLabel,
   IonList,
   IonListHeader,
@@ -21,9 +25,12 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { optionsOutline } from 'ionicons/icons';
 
 import { LoadErrorComponent } from '@/app/stations/components/load-error/load-error.component';
 import { StationDetailsComponent } from '@/app/stations/components/station-details/station-details.component';
+import { StationFiltersComponent } from '@/app/stations/components/station-filters/station-filters.component';
 import { StationListItemComponent } from '@/app/stations/components/station-list-item/station-list-item.component';
 import { StationMapComponent } from '@/app/stations/components/station-map/station-map.component';
 import type { UserLocation } from '@/app/stations/data/location.service';
@@ -31,6 +38,8 @@ import { LocationService } from '@/app/stations/data/location.service';
 import type { Station } from '@/app/stations/data/station.model';
 import { StationService } from '@/app/stations/data/station.service';
 import { sortByDistance } from '@/app/stations/utils/distance';
+import type { StationFilters } from '@/app/stations/utils/filters';
+import { NO_FILTERS, countActiveFilters, filterStations } from '@/app/stations/utils/filters';
 
 const SHEET_BREAKPOINTS = { collapsed: 0.15, half: 0.5, full: 1 };
 
@@ -49,10 +58,15 @@ const SHEET_BREAKPOINTS = { collapsed: 0.15, half: 0.5, full: 1 };
     IonLabel,
     IonText,
     IonSpinner,
+    IonButton,
+    IonButtons,
+    IonIcon,
+    IonBadge,
     LoadErrorComponent,
     StationMapComponent,
     StationListItemComponent,
     StationDetailsComponent,
+    StationFiltersComponent,
   ],
 })
 export class StationsPage {
@@ -73,13 +87,20 @@ export class StationsPage {
   readonly isLoadingStations = computed(() => this.stationsResource.isLoading() || this.location() === null);
   readonly hasStationsError = computed(() => this.stationsResource.error() !== undefined);
   readonly selectedStation = signal<Station | null>(null);
+  readonly filters = signal<StationFilters>(NO_FILTERS);
+  readonly isFilterSheetOpen = signal(false);
+  readonly activeFilterCount = computed(() => countActiveFilters(this.filters()));
+
+  // Shared by the map and the list, so both always show the same stations.
+  readonly filteredStations = computed(() => filterStations(this.stations(), this.filters()));
 
   readonly stationsByDistance = computed(() => {
     const location = this.location();
-    return location ? sortByDistance(this.stations(), location.position) : [];
+    return location ? sortByDistance(this.filteredStations(), location.position) : [];
   });
 
   constructor() {
+    addIcons({ optionsOutline });
     this.locationService.getLocation().then((location) => this.location.set(location));
   }
 
@@ -104,5 +125,14 @@ export class StationsPage {
 
   reloadStations(): void {
     this.stationsResource.reload();
+  }
+
+  applyFilters(filters: StationFilters): void {
+    this.filters.set(filters);
+    this.isFilterSheetOpen.set(false);
+  }
+
+  clearFilters(): void {
+    this.filters.set(NO_FILTERS);
   }
 }

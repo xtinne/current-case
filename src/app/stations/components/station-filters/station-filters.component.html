@@ -1,0 +1,70 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss.emit()">Cancel</ion-button>
+    </ion-buttons>
+    <ion-title>Filters</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="reset()">Reset</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item>
+      <ion-toggle [checked]="draft().availableNow" (ionChange)="update({ availableNow: $event.detail.checked })">
+        Available now
+      </ion-toggle>
+    </ion-item>
+    <ion-item>
+      <ion-toggle [checked]="draft().hidePrivate" (ionChange)="update({ hidePrivate: $event.detail.checked })">
+        Hide residents-only and private
+      </ion-toggle>
+    </ion-item>
+  </ion-list>
+
+  <ion-list>
+    <ion-list-header>
+      <ion-label>Charging speed</ion-label>
+    </ion-list-header>
+    <ion-item lines="none">
+      <ion-segment [value]="draft().minPowerKw" (ionChange)="setMinPower($event.detail.value)">
+        @for (option of powerOptions; track option.minPowerKw) {
+          <ion-segment-button [value]="option.minPowerKw">
+            <ion-label>{{ option.label }}</ion-label>
+          </ion-segment-button>
+        }
+      </ion-segment>
+    </ion-item>
+  </ion-list>
+
+  <ion-list>
+    <ion-list-header>
+      <ion-label>Plug type</ion-label>
+    </ion-list-header>
+    @for (type of connectorTypes(); track type) {
+      <ion-item>
+        <ion-checkbox
+          [checked]="draft().connectorTypes.includes(type)"
+          (ionChange)="toggleConnectorType(type, $event.detail.checked)"
+        >
+          {{ type }}
+        </ion-checkbox>
+      </ion-item>
+    }
+  </ion-list>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-button
+      expand="block"
+      class="ion-margin-horizontal"
+      [disabled]="matchCount() === 0"
+      (click)="apply.emit(draft())"
+    >
+      Show {{ matchCount() }} {{ matchCount() === 1 ? 'station' : 'stations' }}
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>
