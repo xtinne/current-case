@@ -1,61 +1,88 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Find a charger</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="isFilterSheetOpen.set(true)">
-        <ion-icon slot="start" name="options-outline" />
-        Filters
-        @if (activeFilterCount() > 0) {
-          <ion-badge class="ion-margin-start">{{ activeFilterCount() }}</ion-badge>
-        }
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content>
+<ion-content [scrollY]="false">
   <app-station-map
     [stations]="filteredStations()"
     [userPosition]="location()?.position ?? null"
     [selectedStation]="selectedStation()"
-    [coveredBottomRatio]="sheetInitialBreakpoint"
+    [coveredTop]="mapCoveredTop()"
+    [coveredLeft]="mapCoveredLeft()"
+    [coveredBottomRatio]="mapCoveredBottomRatio()"
     (stationSelected)="openStation($event)"
   />
+
+  <div class="side-panel" aria-hidden="true"></div>
+
+  <app-map-toolbar
+    class="map-toolbar"
+    [query]="searchQuery()"
+    [filters]="filters()"
+    [connectorTypes]="connectorTypes()"
+    (queryChange)="searchQuery.set($event)"
+    (filtersChange)="filters.set($event)"
+    (openFilters)="isFilterSheetOpen.set(true)"
+  />
+
+  @if (aboveSheet(); as bottom) {
+    <a
+      class="map-credit"
+      href="https://www.openstreetmap.org/copyright"
+      target="_blank"
+      rel="noopener"
+      [style.bottom]="bottom"
+      >© OpenStreetMap</a
+    >
+    <button
+      type="button"
+      class="locate-button"
+      aria-label="Show my location"
+      [style.bottom]="bottom"
+      (click)="locate()"
+    >
+      <ion-icon name="navigate" aria-hidden="true" />
+    </button>
+  }
 </ion-content>
 
 <ion-modal
+  #sheet
+  class="station-sheet"
   [isOpen]="true"
   [breakpoints]="sheetBreakpoints"
   [initialBreakpoint]="sheetInitialBreakpoint"
   [backdropBreakpoint]="sheetInitialBreakpoint"
   [canDismiss]="false"
   [expandToScroll]="false"
+  (ionBreakpointDidChange)="sheetBreakpoint.set($event.detail.breakpoint)"
 >
   <ng-template>
     <ion-content #sheetContent>
       <div [hidden]="selectedStation() !== null">
-        <ion-list>
-          <ion-list-header>
-            <ion-label>Nearby stations</ion-label>
-          </ion-list-header>
+        @if (isLoadingStations()) {
+          <div class="loading">
+            <ion-spinner />
+          </div>
+        } @else if (hasStationsError()) {
+          <app-state-message
+            icon="cloud-offline-outline"
+            title="Couldn't load charging stations"
+            message="Check your connection and try again."
+            actionLabel="Try again"
+            (action)="reloadStations()"
+          />
+        } @else if (stations().length === 0) {
+          <app-state-message icon="location-outline" title="No charging stations found" />
+        } @else {
+          <div class="sheet-header">
+            <h2>{{ stationsByDistance().length }} {{ stationsByDistance().length === 1 ? 'station' : 'stations' }}</h2>
+            <span>{{ availableNowCount() }} available now</span>
+          </div>
 
-          @if (isLoadingStations()) {
-            <div class="ion-padding ion-text-center">
-              <ion-spinner />
-            </div>
-          } @else if (hasStationsError()) {
-            <app-load-error message="Couldn't load charging stations." (retry)="reloadStations()" />
-          } @else if (stations().length === 0) {
+          @if (location()?.isFallback) {
             <ion-text color="medium">
-              <p class="ion-padding ion-text-center">No charging stations found.</p>
+              <p class="location-notice">Your location is unavailable. Showing stations near Oslo centre.</p>
             </ion-text>
-          } @else {
-            @if (location()?.isFallback) {
-              <ion-text color="medium">
-                <p class="ion-padding-horizontal">Your location is unavailable. Showing stations near Oslo centre.</p>
-              </ion-text>
-            }
+          }
 
+          <div class="station-list">
             @for (item of stationsByDistance(); track item.station.id) {
               <app-station-list-item
                 [station]="item.station"
@@ -63,29 +90,36 @@
                 (click)="openStation(item.station)"
               />
             } @empty {
-              <div class="ion-padding ion-text-center">
-                <ion-text color="medium">
-                  <p>No stations match your filters.</p>
-                </ion-text>
-                <ion-button fill="outline" (click)="clearFilters()">Clear filters</ion-button>
-              </div>
+              <app-state-message
+                icon="search-outline"
+                title="No stations match"
+                message="Try fewer filters or a different search."
+                actionLabel="Clear search and filters"
+                (action)="clearSearchAndFilters()"
+              />
             }
-          }
-        </ion-list>
+          </div>
+        }
       </div>
 
       @if (selectedStation(); as station) {
-        <app-station-details [stationId]="station.id" (back)="closeStation()" />
+        <app-station-details [stationId]="station.id" [distanceKm]="selectedDistanceKm()" (back)="closeStation()" />
       }
     </ion-content>
   </ng-template>
 </ion-modal>
 
-<ion-modal [isOpen]="isFilterSheetOpen()" (didDismiss)="isFilterSheetOpen.set(false)">
+<ion-modal
+  class="filter-sheet"
+  [isOpen]="isFilterSheetOpen()"
+  [breakpoints]="[0, 1]"
+  [initialBreakpoint]="1"
+  (didDismiss)="isFilterSheetOpen.set(false)"
+>
   <ng-template>
     <app-station-filters
       [filters]="filters()"
-      [stations]="stations()"
+      [stations]="searchedStations()"
       (apply)="applyFilters($event)"
       (dismiss)="isFilterSheetOpen.set(false)"
     />

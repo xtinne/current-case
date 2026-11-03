@@ -1,0 +1,147 @@
+.sheet-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 24px 20px 14px;
+  background: var(--ion-background-color);
+
+  h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  span {
+    color: var(--ion-color-medium);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+}
+
+.location-notice {
+  margin: 0;
+  padding: 0 20px 12px;
+  font-size: 13px;
+}
+
+.station-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 16px 24px;
+
+  app-state-message {
+    padding: 0;
+  }
+}
+
+.map-toolbar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.locate-button {
+  position: absolute;
+  right: 16px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 24px;
+  background: var(--app-color-surface);
+  box-shadow: 0 6px 18px -6px rgb(10 51 48 / 40%);
+  color: var(--ion-color-primary);
+  font-size: 20px;
+  cursor: pointer;
+  transition: bottom 0.2s ease;
+
+  ion-icon {
+    transform: translate(-1px, 1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ion-color-primary);
+    outline-offset: 2px;
+  }
+}
+
+.filter-sheet {
+  --height: auto;
+}
+
+.station-sheet,
+.filter-sheet {
+  --width: 100%;
+}
+
+.map-credit {
+  position: absolute;
+  left: 12px;
+  z-index: 1;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 75%);
+  color: var(--ion-color-medium);
+  font-size: 10px;
+  text-decoration: none;
+  transition: bottom 0.2s ease;
+}
+
+.side-panel {
+  display: none;
+}
+
+@media (min-width: 992px) {
+  .side-panel {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    display: block;
+    width: 440px;
+    border-right: 1px solid var(--app-color-border);
+    background: var(--ion-background-color);
+  }
+
+  .map-toolbar {
+    right: auto;
+    width: 440px;
+  }
+
+  .station-sheet {
+    --width: 440px;
+    --height: calc(100% - 112px);
+    --border-radius: 0;
+    --box-shadow: none;
+
+    justify-content: flex-start;
+
+    &::part(handle),
+    &::part(backdrop) {
+      display: none;
+    }
+  }
+
+  .filter-sheet {
+    --width: 440px;
+
+    justify-content: flex-start;
+  }
+
+  .map-credit {
+    right: 76px;
+    left: auto;
+  }
+}

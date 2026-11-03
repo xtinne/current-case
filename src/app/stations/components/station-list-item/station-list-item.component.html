@@ -1,11 +1,39 @@
-<ion-item button>
-  <ion-label>
-    <h2>{{ station().name }}</h2>
-    <p>{{ address() }}</p>
-    <p><app-station-badges [station]="station()" /></p>
+<button type="button" class="card">
+  <div class="heading">
+    <div class="title">
+      <h2>{{ station().name }}</h2>
+      <p>{{ address() }}</p>
+    </div>
+    <span class="mono distance">{{ distance() }}</span>
+  </div>
+
+  <div class="status">
+    <span class="bar" aria-hidden="true">
+      @for (segment of barSegments(); track $index) {
+        <span [style.flex-grow]="segment.count" [style.background]="segment.color"></span>
+      }
+    </span>
+    <span class="status-label" [style.color]="statusColor()">{{ statusLabel() }}</span>
     @if (station().chargers.total > 0) {
-      <p>{{ station().maxPowerKw }} kW · {{ connectorTypes() }}</p>
+      <span class="power" [class.fast]="isFast()">
+        @if (isFast()) {
+          <span class="fast-label"><ion-icon name="flash" aria-hidden="true" />Fast</span>
+        }
+        <span>
+          <span class="mono">{{ station().maxPowerKw }}</span> kW
+        </span>
+      </span>
     }
-  </ion-label>
-  <ion-note slot="end">{{ distance() }}</ion-note>
-</ion-item>
+  </div>
+
+  @if (connectorTypes().length > 0 || accessLabel()) {
+    <div class="tags">
+      @for (type of connectorTypes(); track type) {
+        <span class="tag">{{ type }}</span>
+      }
+      @if (accessLabel(); as accessLabel) {
+        <span class="tag access"><ion-icon name="lock-closed" aria-hidden="true" />{{ accessLabel }}</span>
+      }
+    </div>
+  }
+</button>

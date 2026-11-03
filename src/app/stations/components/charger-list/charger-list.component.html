@@ -1,0 +1,22 @@
+<ul class="card">
+  @for (charger of chargers(); track charger.id) {
+    <li>
+      <span class="power-tile" [class.fast]="charger.maxPowerKw >= fastChargingMinKw">
+        <span class="mono">{{ charger.maxPowerKw }}</span>
+        <span class="unit">
+          @if (charger.maxPowerKw >= fastChargingMinKw) {
+            <ion-icon name="flash" aria-hidden="true" />
+          }
+          kW {{ charger.maxPowerKw >= fastChargingMinKw ? 'DC' : 'AC' }}
+        </span>
+      </span>
+      <span class="charger-name">
+        <strong>{{ charger.name }}</strong>
+        <span>{{ charger.connectorTypes.join(' · ') }}</span>
+      </span>
+      <span class="status-chip" [class]="charger.status">{{ statusLabels[charger.status] }}</span>
+    </li>
+  } @empty {
+    <li class="muted">This station has no registered chargers.</li>
+  }
+</ul>

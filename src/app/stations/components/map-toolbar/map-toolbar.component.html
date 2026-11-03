@@ -1,0 +1,45 @@
+<div class="top-row">
+  <label class="search">
+    <ion-icon name="search" aria-hidden="true" />
+    <input
+      #searchInput
+      type="search"
+      placeholder="Search stations"
+      aria-label="Search stations"
+      enterkeyhint="search"
+      [value]="query()"
+      (input)="queryChange.emit(searchInput.value)"
+    />
+    @if (query()) {
+      <button type="button" class="clear" aria-label="Clear search" (click)="queryChange.emit('')">
+        <ion-icon name="close-circle" aria-hidden="true" />
+      </button>
+    }
+  </label>
+
+  <button
+    type="button"
+    class="filter-button"
+    [attr.aria-label]="activeCount() > 0 ? 'Filters, ' + activeCount() + ' active' : 'Filters'"
+    (click)="openFilters.emit()"
+  >
+    <ion-icon name="options-outline" aria-hidden="true" />
+    @if (activeCount() > 0) {
+      <span class="count" aria-hidden="true">{{ activeCount() }}</span>
+    }
+  </button>
+</div>
+
+<div class="chips">
+  @for (filter of quickFilters(); track filter.label) {
+    <button
+      type="button"
+      class="chip"
+      [class.active]="filter.active"
+      [attr.aria-pressed]="filter.active"
+      (click)="filtersChange.emit(filter.toggled)"
+    >
+      {{ filter.label }}
+    </button>
+  }
+</div>

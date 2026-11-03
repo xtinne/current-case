@@ -16,11 +16,20 @@ export const NO_FILTERS: StationFilters = {
   hidePrivate: false,
 };
 
+export const FAST_CHARGING_MIN_KW = 50;
+
 export const POWER_OPTIONS = [
-  { label: 'Any', minPowerKw: 0 },
-  { label: '22 kW+', minPowerKw: 22 },
-  { label: '50 kW+', minPowerKw: 50 },
+  { label: 'Any', unit: 'all', minPowerKw: 0 },
+  { label: '22+', unit: 'kW', minPowerKw: 22 },
+  { label: '50+', unit: 'kW', minPowerKw: FAST_CHARGING_MIN_KW },
+  { label: '150+', unit: 'kW', minPowerKw: 150 },
 ];
+
+export const PLUG_DESCRIPTIONS: Record<string, string> = {
+  CCS2: 'DC fast',
+  CHAdeMO: 'DC fast',
+  'Type 2': 'AC',
+};
 
 export function filterStations(stations: Station[], filters: StationFilters): Station[] {
   return stations.filter(
@@ -41,4 +50,12 @@ export function countActiveFilters(filters: StationFilters): number {
 
 export function getConnectorTypes(stations: Station[]): string[] {
   return [...new Set(stations.flatMap((station) => station.connectors.map((connector) => connector.type)))].sort();
+}
+
+// Searches station names only; searching addresses or places would need a geocoding API.
+export function searchStations(stations: Station[], query: string): Station[] {
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  return normalizedQuery
+    ? stations.filter((station) => station.name.toLocaleLowerCase().includes(normalizedQuery))
+    : stations;
 }

@@ -1,87 +1,107 @@
-<ion-toolbar>
-  <ion-buttons slot="start">
-    <ion-button aria-label="Back to list" (click)="back.emit()">
-      <ion-icon slot="icon-only" name="arrow-back" />
-    </ion-button>
-  </ion-buttons>
-  <ion-title>{{ station()?.name }}</ion-title>
-</ion-toolbar>
+<div class="sticky-header">
+  <button type="button" class="back-button" (click)="back.emit()">
+    <ion-icon name="chevron-back" aria-hidden="true" />
+    All stations
+  </button>
+  @if (station(); as station) {
+    <header class="heading">
+      <h2>{{ station.name }}</h2>
+      <p>
+        <span>{{ address() }}</span>
+        @if (distance(); as distance) {
+          <span aria-hidden="true">·</span>
+          <span>{{ distance }}</span>
+        }
+        @if (accessLabel(); as accessLabel) {
+          <span class="access"><ion-icon name="lock-closed" aria-hidden="true" />{{ accessLabel }}</span>
+        }
+      </p>
+    </header>
+  }
+</div>
 
 @if (isLoading()) {
-  <div class="ion-padding ion-text-center">
+  <div class="loading">
     <ion-spinner />
   </div>
 } @else if (hasError()) {
-  <app-load-error message="Couldn't load the station details." (retry)="retry()" />
+  <app-state-message
+    icon="cloud-offline-outline"
+    title="Couldn't load the station details"
+    message="Check your connection and try again."
+    actionLabel="Try again"
+    (action)="retry()"
+  />
 } @else if (station(); as station) {
-  <div class="ion-padding">
-    <p>{{ address() }}</p>
-    @if (badgeStation(); as badgeStation) {
-      <app-station-badges [station]="badgeStation" />
-    }
-    @if (directionsUrl(); as directionsUrl) {
-      <ion-button expand="block" class="ion-margin-top" [href]="directionsUrl" target="_blank" rel="noopener">
-        <ion-icon slot="start" name="navigate" />
-        Navigate
-      </ion-button>
-    }
+  <section class="availability" aria-label="Availability">
+    <div class="summary">
+      <p>
+        <span class="mono available-count" [class.none]="availableCount() === 0">{{ availableCount() }}</span>
+        of {{ station.chargers.length }} available
+      </p>
+      <p>
+        <span class="mono max-power">{{ maxPowerKw() }}</span> kW max
+      </p>
+    </div>
+    <div class="segments" aria-hidden="true">
+      @for (status of chargerSegments(); track $index) {
+        <span [class]="status"></span>
+      }
+    </div>
+    <ul class="legend" aria-hidden="true">
+      <li class="available">Available</li>
+      <li class="in-use">In use</li>
+      <li class="out-of-order">Out of order</li>
+    </ul>
+  </section>
+
+  @if (directionsUrl(); as directionsUrl) {
+    <a class="navigate" [href]="directionsUrl" target="_blank" rel="noopener">
+      <ion-icon name="navigate" aria-hidden="true" />
+      Navigate
+      @if (distance(); as distance) {
+        · {{ distance }}
+      }
+    </a>
+  }
+
+  <section class="card price" aria-label="Price">
+    <p>
+      <span class="mono price-value">{{ station.price.perKwh | number: '1.2-2' }}</span>
+      {{ station.price.currency }}/kWh
+    </p>
+    <p class="muted">
+      @if (station.price.startFee > 0) {
+        Start fee {{ station.price.startFee | number: '1.2-2' }} {{ station.price.currency }}
+      } @else {
+        No start fee
+      }
+      · incl. {{ station.price.vatPercent }}% VAT
+    </p>
+  </section>
+
+  <div class="section-title">
+    <h3>Chargers</h3>
+    <span>{{ station.chargers.length }} total</span>
   </div>
+  <app-charger-list [chargers]="station.chargers" />
 
-  <ion-list>
-    <ion-list-header>
-      <ion-label>Chargers</ion-label>
-    </ion-list-header>
-    @for (charger of station.chargers; track charger.id) {
-      <ion-item>
-        <ion-label>
-          <h3>{{ charger.name }}</h3>
-          <p>{{ charger.maxPowerKw }} kW · {{ charger.connectorTypes.join(' · ') }}</p>
-        </ion-label>
-        <ion-badge slot="end" [color]="chargerStatuses[charger.status].color">
-          {{ chargerStatuses[charger.status].label }}
-        </ion-badge>
-      </ion-item>
-    }
-  </ion-list>
-
-  <ion-list>
-    <ion-list-header>
-      <ion-label>Price</ion-label>
-    </ion-list-header>
-    <ion-item>
-      <ion-label>Charging</ion-label>
-      <ion-note slot="end">{{ station.price.perKwh | number: '1.2-2' }} {{ station.price.currency }}/kWh</ion-note>
-    </ion-item>
-    <ion-item>
-      <ion-label>Start fee</ion-label>
-      <ion-note slot="end">
-        @if (station.price.startFee > 0) {
-          {{ station.price.startFee | number: '1.2-2' }} {{ station.price.currency }}
-        } @else {
-          None
-        }
-      </ion-note>
-    </ion-item>
-    <ion-item lines="none">
-      <ion-note>Prices include {{ station.price.vatPercent }}% VAT.</ion-note>
-    </ion-item>
-  </ion-list>
-
-  <ion-list>
-    <ion-list-header>
-      <ion-label>Support</ion-label>
-    </ion-list-header>
-    <ion-item [href]="phoneUrl()">
-      <ion-icon slot="start" name="call" />
-      <ion-label>{{ station.support.phone }}</ion-label>
-    </ion-item>
-    <ion-item [href]="'mailto:' + station.support.email">
-      <ion-icon slot="start" name="mail" />
-      <ion-label>{{ station.support.email }}</ion-label>
-    </ion-item>
-    <ion-item [href]="station.support.website" target="_blank" rel="noopener">
-      <ion-icon slot="start" name="globe" />
-      <ion-label>Website</ion-label>
-    </ion-item>
-  </ion-list>
+  <div class="section-title">
+    <h3>Support</h3>
+  </div>
+  <ul class="card support">
+    <li>
+      <a [href]="phoneUrl()"><ion-icon name="call" aria-hidden="true" />{{ station.support.phone }}</a>
+    </li>
+    <li>
+      <a [href]="'mailto:' + station.support.email"
+        ><ion-icon name="mail" aria-hidden="true" />{{ station.support.email }}</a
+      >
+    </li>
+    <li>
+      <a [href]="station.support.website" target="_blank" rel="noopener"
+        ><ion-icon name="globe" aria-hidden="true" />Website</a
+      >
+    </li>
+  </ul>
 }

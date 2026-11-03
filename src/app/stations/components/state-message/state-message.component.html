@@ -1,0 +1,10 @@
+<div class="card">
+  <ion-icon [name]="icon()" aria-hidden="true" />
+  <h3>{{ title() }}</h3>
+  @if (message(); as message) {
+    <p>{{ message }}</p>
+  }
+  @if (actionLabel(); as actionLabel) {
+    <button type="button" (click)="action.emit()">{{ actionLabel }}</button>
+  }
+</div>

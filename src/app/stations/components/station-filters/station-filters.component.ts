@@ -1,48 +1,25 @@
 import { ChangeDetectionStrategy, Component, computed, input, linkedSignal, output } from '@angular/core';
-import {
-  IonButton,
-  IonButtons,
-  IonCheckbox,
-  IonContent,
-  IonFooter,
-  IonHeader,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonListHeader,
-  IonSegment,
-  IonSegmentButton,
-  IonTitle,
-  IonToggle,
-  IonToolbar,
-} from '@ionic/angular';
+import { IonIcon, IonToggle } from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { checkmark, close, refresh } from 'ionicons/icons';
 
 import type { Station } from '@/app/stations/data/station.model';
 import type { StationFilters } from '@/app/stations/utils/filters';
-import { NO_FILTERS, POWER_OPTIONS, filterStations, getConnectorTypes } from '@/app/stations/utils/filters';
+import {
+  NO_FILTERS,
+  PLUG_DESCRIPTIONS,
+  POWER_OPTIONS,
+  countActiveFilters,
+  filterStations,
+  getConnectorTypes,
+} from '@/app/stations/utils/filters';
 
 @Component({
   selector: 'app-station-filters',
   templateUrl: 'station-filters.component.html',
+  styleUrl: 'station-filters.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'ion-page' },
-  imports: [
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonButtons,
-    IonButton,
-    IonContent,
-    IonList,
-    IonListHeader,
-    IonItem,
-    IonLabel,
-    IonToggle,
-    IonCheckbox,
-    IonSegment,
-    IonSegmentButton,
-    IonFooter,
-  ],
+  imports: [IonToggle, IonIcon],
 })
 export class StationFiltersComponent {
   readonly filters = input.required<StationFilters>();
@@ -51,22 +28,27 @@ export class StationFiltersComponent {
   readonly dismiss = output();
 
   readonly powerOptions = POWER_OPTIONS;
+  readonly plugDescriptions = PLUG_DESCRIPTIONS;
 
+  // A draft copy of the filters: changes only apply when the user taps "Show X stations".
   readonly draft = linkedSignal(() => this.filters());
   readonly connectorTypes = computed(() => getConnectorTypes(this.stations()));
   readonly matchCount = computed(() => filterStations(this.stations(), this.draft()).length);
+  readonly canReset = computed(() => countActiveFilters(this.draft()) > 0);
+
+  constructor() {
+    addIcons({ close, refresh, checkmark });
+  }
 
   update(changes: Partial<StationFilters>): void {
     this.draft.update((draft) => ({ ...draft, ...changes }));
   }
 
-  setMinPower(value: string | number | undefined): void {
-    this.update({ minPowerKw: Number(value ?? 0) });
-  }
-
-  toggleConnectorType(type: string, checked: boolean): void {
+  toggleConnectorType(type: string): void {
     const selected = this.draft().connectorTypes;
-    this.update({ connectorTypes: checked ? [...selected, type] : selected.filter((t) => t !== type) });
+    this.update({
+      connectorTypes: selected.includes(type) ? selected.filter((t) => t !== type) : [...selected, type],
+    });
   }
 
   reset(): void {

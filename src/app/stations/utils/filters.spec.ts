@@ -1,6 +1,6 @@
 import type { Station, StationAccess } from '@/app/stations/data/station.model';
 
-import { NO_FILTERS, countActiveFilters, filterStations, getConnectorTypes } from './filters';
+import { NO_FILTERS, countActiveFilters, filterStations, getConnectorTypes, searchStations } from './filters';
 
 function station(
   id: number,
@@ -80,5 +80,23 @@ describe('getConnectorTypes', () => {
       'CCS2',
       'Type 2',
     ]);
+  });
+});
+
+describe('searchStations', () => {
+  const stations = [
+    { ...station(1), name: 'Furuhøgda Borettslag' },
+    { ...station(2), name: 'Fjordtunet Hurtiglader' },
+    { ...station(3), name: 'Gullbekken Hurtiglader' },
+  ];
+
+  it('returns every station for an empty or blank query', () => {
+    expect(ids(searchStations(stations, ''))).toEqual([1, 2, 3]);
+    expect(ids(searchStations(stations, '   '))).toEqual([1, 2, 3]);
+  });
+
+  it('matches part of the name, ignoring case and surrounding spaces', () => {
+    expect(ids(searchStations(stations, ' hurtig '))).toEqual([2, 3]);
+    expect(ids(searchStations(stations, 'FURUHØGDA'))).toEqual([1]);
   });
 });

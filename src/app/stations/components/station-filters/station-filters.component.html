@@ -1,70 +1,78 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button (click)="dismiss.emit()">Cancel</ion-button>
-    </ion-buttons>
-    <ion-title>Filters</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="reset()">Reset</ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<div class="header">
+  <button type="button" class="close" aria-label="Close filters" (click)="dismiss.emit()">
+    <ion-icon name="close" aria-hidden="true" />
+  </button>
+  <h2>Filters</h2>
+  <button type="button" class="reset" [disabled]="!canReset()" (click)="reset()">
+    <ion-icon name="refresh" aria-hidden="true" />
+    Reset
+  </button>
+</div>
 
-<ion-content>
-  <ion-list>
-    <ion-item>
-      <ion-toggle [checked]="draft().availableNow" (ionChange)="update({ availableNow: $event.detail.checked })">
-        Available now
-      </ion-toggle>
-    </ion-item>
-    <ion-item>
-      <ion-toggle [checked]="draft().hidePrivate" (ionChange)="update({ hidePrivate: $event.detail.checked })">
-        Hide residents-only and private
-      </ion-toggle>
-    </ion-item>
-  </ion-list>
-
-  <ion-list>
-    <ion-list-header>
-      <ion-label>Charging speed</ion-label>
-    </ion-list-header>
-    <ion-item lines="none">
-      <ion-segment [value]="draft().minPowerKw" (ionChange)="setMinPower($event.detail.value)">
-        @for (option of powerOptions; track option.minPowerKw) {
-          <ion-segment-button [value]="option.minPowerKw">
-            <ion-label>{{ option.label }}</ion-label>
-          </ion-segment-button>
-        }
-      </ion-segment>
-    </ion-item>
-  </ion-list>
-
-  <ion-list>
-    <ion-list-header>
-      <ion-label>Plug type</ion-label>
-    </ion-list-header>
-    @for (type of connectorTypes(); track type) {
-      <ion-item>
-        <ion-checkbox
-          [checked]="draft().connectorTypes.includes(type)"
-          (ionChange)="toggleConnectorType(type, $event.detail.checked)"
-        >
-          {{ type }}
-        </ion-checkbox>
-      </ion-item>
-    }
-  </ion-list>
-</ion-content>
-
-<ion-footer>
-  <ion-toolbar>
-    <ion-button
-      expand="block"
-      class="ion-margin-horizontal"
-      [disabled]="matchCount() === 0"
-      (click)="apply.emit(draft())"
+<div class="sections">
+  <div class="card toggles">
+    <ion-toggle
+      justify="space-between"
+      [checked]="draft().availableNow"
+      (ionChange)="update({ availableNow: $event.detail.checked })"
     >
+      <span class="toggle-label">Available now</span>
+      <span class="toggle-hint">Only stations with a free charger</span>
+    </ion-toggle>
+    <ion-toggle
+      justify="space-between"
+      [checked]="draft().hidePrivate"
+      (ionChange)="update({ hidePrivate: $event.detail.checked })"
+    >
+      <span class="toggle-label">Public stations only</span>
+      <span class="toggle-hint">Hide residents-only and private</span>
+    </ion-toggle>
+  </div>
+
+  <section>
+    <h3 id="speed-label">Minimum charging speed</h3>
+    <div class="speeds" role="radiogroup" aria-labelledby="speed-label">
+      @for (option of powerOptions; track option.minPowerKw) {
+        <button
+          type="button"
+          role="radio"
+          [attr.aria-checked]="draft().minPowerKw === option.minPowerKw"
+          [class.selected]="draft().minPowerKw === option.minPowerKw"
+          (click)="update({ minPowerKw: option.minPowerKw })"
+        >
+          <strong>{{ option.label }}</strong>
+          <span>{{ option.unit }}</span>
+        </button>
+      }
+    </div>
+  </section>
+
+  <section>
+    <h3>Plug type · match any</h3>
+    <div class="plugs">
+      @for (type of connectorTypes(); track type) {
+        @let selected = draft().connectorTypes.includes(type);
+        <button
+          type="button"
+          [attr.aria-pressed]="selected"
+          [class.selected]="selected"
+          (click)="toggleConnectorType(type)"
+        >
+          <span class="check" aria-hidden="true"><ion-icon name="checkmark" /></span>
+          <strong>{{ type }}</strong>
+          <span>{{ plugDescriptions[type] }}</span>
+        </button>
+      }
+    </div>
+  </section>
+</div>
+
+<div class="footer">
+  <button type="button" class="apply" [disabled]="matchCount() === 0" (click)="apply.emit(draft())">
+    @if (matchCount() === 0) {
+      No matches, adjust your filters
+    } @else {
       Show {{ matchCount() }} {{ matchCount() === 1 ? 'station' : 'stations' }}
-    </ion-button>
-  </ion-toolbar>
-</ion-footer>
+    }
+  </button>
+</div>

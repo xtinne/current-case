@@ -1,65 +1,33 @@
 import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import {
-  IonBadge,
-  IonButton,
-  IonButtons,
-  IonIcon,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonListHeader,
-  IonNote,
-  IonSpinner,
-  IonTitle,
-  IonToolbar,
-} from '@ionic/angular';
+import { IonIcon, IonSpinner } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { arrowBack, call, globe, mail, navigate } from 'ionicons/icons';
+import { call, chevronBack, globe, lockClosed, mail, navigate } from 'ionicons/icons';
 
-import { LoadErrorComponent } from '@/app/stations/components/load-error/load-error.component';
-import { StationBadgesComponent } from '@/app/stations/components/station-badges/station-badges.component';
+import { ChargerListComponent } from '@/app/stations/components/charger-list/charger-list.component';
+import { StateMessageComponent } from '@/app/stations/components/state-message/state-message.component';
 import type { ChargerStatus } from '@/app/stations/data/station.model';
 import { StationService } from '@/app/stations/data/station.service';
+import { ACCESS_LABELS } from '@/app/stations/utils/access';
 import { formatAddress } from '@/app/stations/utils/address';
-import { countChargers } from '@/app/stations/utils/availability';
+import { formatDistance } from '@/app/stations/utils/distance';
 
-const CHARGER_STATUSES: Record<ChargerStatus, { label: string; color: string }> = {
-  available: { label: 'Available', color: 'success' },
-  'in-use': { label: 'In use', color: 'warning' },
-  'out-of-order': { label: 'Out of order', color: 'danger' },
-};
+const STATUS_ORDER: ChargerStatus[] = ['available', 'in-use', 'out-of-order'];
 
 @Component({
   selector: 'app-station-details',
   templateUrl: 'station-details.component.html',
+  styleUrl: 'station-details.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    DecimalPipe,
-    IonToolbar,
-    IonButtons,
-    IonTitle,
-    IonButton,
-    IonIcon,
-    IonList,
-    IonListHeader,
-    IonItem,
-    IonLabel,
-    IonBadge,
-    IonNote,
-    IonSpinner,
-    StationBadgesComponent,
-    LoadErrorComponent,
-  ],
+  imports: [DecimalPipe, IonIcon, IonSpinner, StateMessageComponent, ChargerListComponent],
 })
 export class StationDetailsComponent {
   private readonly stationService = inject(StationService);
 
   readonly stationId = input.required<number>();
+  readonly distanceKm = input<number | null>(null);
   readonly back = output();
-
-  readonly chargerStatuses = CHARGER_STATUSES;
 
   private readonly details = rxResource({
     params: () => this.stationId(),
@@ -71,15 +39,34 @@ export class StationDetailsComponent {
   readonly isLoading = this.details.isLoading;
   readonly hasError = computed(() => this.details.error() !== undefined);
 
-  readonly badgeStation = computed(() => {
-    const station = this.station();
-    return station && { ...station, chargers: countChargers(station.chargers) };
-  });
-
   readonly address = computed(() => {
     const station = this.station();
     return station ? formatAddress(station) : '';
   });
+
+  readonly distance = computed(() => {
+    const distanceKm = this.distanceKm();
+    return distanceKm === null ? null : formatDistance(distanceKm);
+  });
+
+  readonly accessLabel = computed(() => {
+    const station = this.station();
+    return station ? ACCESS_LABELS[station.access] : null;
+  });
+
+  readonly availableCount = computed(
+    () => this.station()?.chargers.filter((charger) => charger.status === 'available').length ?? 0,
+  );
+
+  readonly maxPowerKw = computed(() =>
+    Math.max(0, ...(this.station()?.chargers.map((charger) => charger.maxPowerKw) ?? [])),
+  );
+
+  readonly chargerSegments = computed(() =>
+    [...(this.station()?.chargers ?? [])]
+      .sort((a, b) => STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status))
+      .map((charger) => charger.status),
+  );
 
   // tel: links can't contain spaces
   readonly phoneUrl = computed(() => `tel:${this.station()?.support.phone.replace(/\s/g, '')}`);
@@ -90,7 +77,7 @@ export class StationDetailsComponent {
   });
 
   constructor() {
-    addIcons({ arrowBack, navigate, call, mail, globe });
+    addIcons({ chevronBack, navigate, call, mail, globe, lockClosed });
   }
 
   retry(): void {

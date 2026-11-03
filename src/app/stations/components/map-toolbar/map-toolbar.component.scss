@@ -1,0 +1,135 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: calc(var(--ion-safe-area-top, 0px) + 12px);
+}
+
+.top-row {
+  display: flex;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.search {
+  display: flex;
+  flex: 1;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  height: 48px;
+  padding: 0 8px 0 16px;
+  border-radius: var(--app-radius-control);
+  background: var(--app-color-surface);
+  box-shadow:
+    0 0 0 1px var(--app-color-border),
+    0 6px 20px -8px rgb(10 51 48 / 35%);
+  font-size: 18px;
+  pointer-events: auto;
+
+  &:focus-within {
+    box-shadow:
+      0 0 0 1px var(--ion-color-primary),
+      0 6px 20px -8px rgb(10 51 48 / 35%);
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--ion-text-color);
+    font: 500 15px var(--ion-font-family);
+
+    &::placeholder {
+      color: var(--ion-color-medium);
+    }
+
+    &::-webkit-search-cancel-button {
+      appearance: none;
+    }
+  }
+}
+
+.clear {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  color: var(--ion-color-medium);
+  font-size: 20px;
+}
+
+button {
+  pointer-events: auto;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--ion-color-primary);
+    outline-offset: 2px;
+  }
+}
+
+.filter-button {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--app-radius-control);
+  background: var(--ion-color-primary);
+  box-shadow: 0 6px 20px -8px rgb(10 51 48 / 60%);
+  color: var(--ion-color-primary-contrast);
+  font-size: 20px;
+}
+
+.count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border: 2px solid var(--ion-background-color);
+  border-radius: 10px;
+  background: var(--ion-color-secondary);
+  color: var(--ion-color-secondary-contrast);
+  font: 700 11px var(--app-font-mono);
+}
+
+.chips {
+  pointer-events: auto;
+  display: flex;
+  gap: 8px;
+  padding: 0 16px 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.chip {
+  flex: none;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 18px;
+  background: var(--app-color-surface);
+  box-shadow:
+    0 0 0 1px var(--app-color-border),
+    0 4px 12px -6px rgb(10 51 48 / 30%);
+  color: var(--ion-text-color);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &.active {
+    background: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+  }
+}

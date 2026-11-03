@@ -1,2 +1,71 @@
 // For information on how to create your own theme, please refer to:
 // https://ionicframework.com/docs/theming/
+
+:root {
+  --ion-font-family: 'Geist', system-ui, sans-serif;
+  --ion-background-color: #f5f7f4;
+  --ion-background-color-rgb: 245, 247, 244;
+  --ion-text-color: #0a3330;
+  --ion-text-color-rgb: 10, 51, 48;
+  --ion-toolbar-background: #f5f7f4;
+
+  --ion-color-primary: #0a3330;
+  --ion-color-primary-rgb: 10, 51, 48;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #092d2a;
+  --ion-color-primary-tint: #224745;
+
+  --ion-color-secondary: #c6f36b;
+  --ion-color-secondary-rgb: 198, 243, 107;
+  --ion-color-secondary-contrast: #0a3330;
+  --ion-color-secondary-contrast-rgb: 10, 51, 48;
+  --ion-color-secondary-shade: #aed65e;
+  --ion-color-secondary-tint: #ccf47a;
+
+  --ion-color-success: #1fae6a;
+  --ion-color-success-rgb: 31, 174, 106;
+  --ion-color-success-contrast: #0a3330;
+  --ion-color-success-contrast-rgb: 10, 51, 48;
+  --ion-color-success-shade: #1b995d;
+  --ion-color-success-tint: #35b679;
+
+  --ion-color-warning: #f0b24a;
+  --ion-color-warning-rgb: 240, 178, 74;
+  --ion-color-warning-contrast: #0a3330;
+  --ion-color-warning-contrast-rgb: 10, 51, 48;
+  --ion-color-warning-shade: #d39d41;
+  --ion-color-warning-tint: #f2ba5c;
+
+  --ion-color-medium: #5b6b68;
+  --ion-color-medium-rgb: 91, 107, 104;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-contrast-rgb: 255, 255, 255;
+  --ion-color-medium-shade: #505e5c;
+  --ion-color-medium-tint: #6b7a77;
+
+  --ion-color-light: #e7ece8;
+  --ion-color-light-rgb: 231, 236, 232;
+  --ion-color-light-contrast: #0a3330;
+  --ion-color-light-contrast-rgb: 10, 51, 48;
+  --ion-color-light-shade: #cbd0cc;
+  --ion-color-light-tint: #e9eeea;
+
+  // App tokens that don't map to an Ionic colour.
+  --app-font-mono: 'Geist Mono', ui-monospace, monospace;
+  --app-color-surface: #ffffff;
+  --app-color-soft: #eef2ef;
+  --app-color-border: rgb(10 51 48 / 6%);
+  --app-color-available-text: #137a4b;
+  --app-color-in-use-text: #96600f;
+  --app-color-offline: #d3dad6;
+  --app-color-available-soft: #e3f7ea;
+  --app-color-in-use-soft: #fdf1dc;
+  --app-color-on-dark-muted: #cfe0dc;
+  --app-color-offline-on-dark: #46625e;
+  --app-color-disabled: #a9b4b0;
+  --app-color-map-placeholder: #e9ede9;
+  --app-color-user-location: #1a73e8;
+  --app-radius-card: 20px;
+  --app-radius-control: 16px;
+}

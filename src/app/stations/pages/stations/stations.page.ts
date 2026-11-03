@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   Injector,
   afterNextRender,
   computed,
@@ -9,26 +10,12 @@ import {
   viewChild,
 } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import {
-  IonBadge,
-  IonButton,
-  IonButtons,
-  IonContent,
-  IonHeader,
-  IonIcon,
-  IonLabel,
-  IonList,
-  IonListHeader,
-  IonModal,
-  IonSpinner,
-  IonText,
-  IonTitle,
-  IonToolbar,
-} from '@ionic/angular';
+import { IonContent, IonIcon, IonModal, IonSpinner, IonText } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { optionsOutline } from 'ionicons/icons';
+import { navigate } from 'ionicons/icons';
 
-import { LoadErrorComponent } from '@/app/stations/components/load-error/load-error.component';
+import { MapToolbarComponent } from '@/app/stations/components/map-toolbar/map-toolbar.component';
+import { StateMessageComponent } from '@/app/stations/components/state-message/state-message.component';
 import { StationDetailsComponent } from '@/app/stations/components/station-details/station-details.component';
 import { StationFiltersComponent } from '@/app/stations/components/station-filters/station-filters.component';
 import { StationListItemComponent } from '@/app/stations/components/station-list-item/station-list-item.component';
@@ -37,32 +24,29 @@ import type { UserLocation } from '@/app/stations/data/location.service';
 import { LocationService } from '@/app/stations/data/location.service';
 import type { Station } from '@/app/stations/data/station.model';
 import { StationService } from '@/app/stations/data/station.service';
+import { getAvailability } from '@/app/stations/utils/availability';
 import { sortByDistance } from '@/app/stations/utils/distance';
 import type { StationFilters } from '@/app/stations/utils/filters';
-import { NO_FILTERS, countActiveFilters, filterStations } from '@/app/stations/utils/filters';
+import { NO_FILTERS, filterStations, getConnectorTypes, searchStations } from '@/app/stations/utils/filters';
 
 const SHEET_BREAKPOINTS = { collapsed: 0.15, half: 0.5, full: 1 };
+const MAP_TOOLBAR_HEIGHT = 130;
+const WIDE_SCREEN_QUERY = '(min-width: 992px)';
+const SIDE_PANEL_WIDTH = 440;
 
 @Component({
   selector: 'app-stations',
   templateUrl: 'stations.page.html',
+  styleUrl: 'stations.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    IonHeader,
-    IonToolbar,
-    IonTitle,
     IonContent,
     IonModal,
-    IonList,
-    IonListHeader,
-    IonLabel,
     IonText,
     IonSpinner,
-    IonButton,
-    IonButtons,
     IonIcon,
-    IonBadge,
-    LoadErrorComponent,
+    MapToolbarComponent,
+    StateMessageComponent,
     StationMapComponent,
     StationListItemComponent,
     StationDetailsComponent,
@@ -73,12 +57,29 @@ export class StationsPage {
   private readonly stationService = inject(StationService);
   private readonly locationService = inject(LocationService);
   private readonly injector = inject(Injector);
-  private readonly sheet = viewChild.required(IonModal);
+  private readonly sheet = viewChild.required<IonModal>('sheet');
+  private readonly map = viewChild.required(StationMapComponent);
   private readonly sheetContent = viewChild<IonContent>('sheetContent');
   private listScrollTop = 0;
 
+  private readonly wideScreenQuery = window.matchMedia(WIDE_SCREEN_QUERY);
+  readonly isWideScreen = signal(this.wideScreenQuery.matches);
+
   readonly sheetBreakpoints = Object.values(SHEET_BREAKPOINTS);
-  readonly sheetInitialBreakpoint = SHEET_BREAKPOINTS.half;
+  readonly sheetInitialBreakpoint = this.isWideScreen() ? SHEET_BREAKPOINTS.full : SHEET_BREAKPOINTS.half;
+  readonly sheetBreakpoint = signal(this.sheetInitialBreakpoint);
+
+  // Parts of the map hidden behind the sheet and toolbar, so the map centres content in the visible part.
+  readonly mapCoveredLeft = computed(() => (this.isWideScreen() ? SIDE_PANEL_WIDTH : 0));
+  readonly mapCoveredTop = computed(() => (this.isWideScreen() ? 0 : MAP_TOOLBAR_HEIGHT));
+  readonly mapCoveredBottomRatio = computed(() => (this.isWideScreen() ? 0 : this.sheetBreakpoint()));
+
+  readonly aboveSheet = computed(() => {
+    if (this.isWideScreen()) {
+      return '16px';
+    }
+    return this.sheetBreakpoint() < SHEET_BREAKPOINTS.full ? `calc(${this.sheetBreakpoint() * 100}% + 16px)` : null;
+  });
 
   private readonly stationsResource = rxResource({ stream: () => this.stationService.getStations() });
 
@@ -89,19 +90,40 @@ export class StationsPage {
   readonly selectedStation = signal<Station | null>(null);
   readonly filters = signal<StationFilters>(NO_FILTERS);
   readonly isFilterSheetOpen = signal(false);
-  readonly activeFilterCount = computed(() => countActiveFilters(this.filters()));
+  readonly connectorTypes = computed(() => getConnectorTypes(this.stations()));
 
   // Shared by the map and the list, so both always show the same stations.
-  readonly filteredStations = computed(() => filterStations(this.stations(), this.filters()));
+  readonly searchQuery = signal('');
+
+  readonly searchedStations = computed(() => searchStations(this.stations(), this.searchQuery()));
+  readonly filteredStations = computed(() => filterStations(this.searchedStations(), this.filters()));
+
+  readonly availableNowCount = computed(
+    () => this.filteredStations().filter((station) => getAvailability(station) === 'available').length,
+  );
 
   readonly stationsByDistance = computed(() => {
     const location = this.location();
     return location ? sortByDistance(this.filteredStations(), location.position) : [];
   });
 
+  readonly selectedDistanceKm = computed(() => {
+    const selected = this.selectedStation();
+    return this.stationsByDistance().find((item) => item.station.id === selected?.id)?.distanceKm ?? null;
+  });
+
   constructor() {
-    addIcons({ optionsOutline });
+    addIcons({ navigate });
     this.locationService.getLocation().then((location) => this.location.set(location));
+
+    const onScreenSizeChange = (event: MediaQueryListEvent): void => this.switchLayout(event.matches);
+    this.wideScreenQuery.addEventListener('change', onScreenSizeChange);
+    inject(DestroyRef).onDestroy(() => this.wideScreenQuery.removeEventListener('change', onScreenSizeChange));
+  }
+
+  private switchLayout(isWideScreen: boolean): void {
+    this.isWideScreen.set(isWideScreen);
+    this.sheet().setCurrentBreakpoint(isWideScreen ? SHEET_BREAKPOINTS.full : SHEET_BREAKPOINTS.half);
   }
 
   async openStation(station: Station): Promise<void> {
@@ -123,6 +145,10 @@ export class StationsPage {
     afterNextRender(() => this.sheetContent()?.scrollToPoint(0, this.listScrollTop), { injector: this.injector });
   }
 
+  locate(): void {
+    this.map().centerOnUser();
+  }
+
   reloadStations(): void {
     this.stationsResource.reload();
   }
@@ -132,7 +158,8 @@ export class StationsPage {
     this.isFilterSheetOpen.set(false);
   }
 
-  clearFilters(): void {
+  clearSearchAndFilters(): void {
+    this.searchQuery.set('');
     this.filters.set(NO_FILTERS);
   }
 }

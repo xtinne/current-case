@@ -1,41 +1,91 @@
 app-station-map {
   display: block;
   height: 100%;
+  isolation: isolate;
 
   .station-map {
     height: 100%;
+    background: var(--app-color-map-placeholder);
+    font-family: var(--ion-font-family);
   }
 
-  .station-marker {
-    border: 2px solid var(--ion-color-light);
-    border-radius: 50%;
-    box-shadow: 0 1px 4px rgb(0 0 0 / 40%);
+  .station-pin {
+    overflow: visible;
+  }
+
+  .station-pill {
+    position: absolute;
+    bottom: 6px;
+    left: 0;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    box-sizing: border-box;
+    height: 28px;
+    padding: 0 9px 0 7px;
+    border-radius: 14px;
+    background: var(--pill-background);
+    color: var(--pill-color);
+    filter: drop-shadow(0 3px 6px rgb(10 30 30 / 35%));
+    font: 600 12px var(--app-font-mono);
+    white-space: nowrap;
+    transform: translateX(-50%);
+    transform-origin: 50% 100%;
+
+    &::after {
+      position: absolute;
+      top: calc(100% + var(--pill-border-width, 0px));
+      left: 50%;
+      box-sizing: border-box;
+      width: 10px;
+      height: 10px;
+      border-right: var(--pill-border-width, 0) solid var(--ion-color-primary);
+      border-bottom: var(--pill-border-width, 0) solid var(--ion-color-primary);
+      background: var(--pill-background);
+      content: '';
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+
+    &__dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 4px;
+      background: var(--pill-dot);
+    }
+
+    &--available {
+      --pill-background: var(--ion-color-primary);
+      --pill-color: var(--ion-color-primary-contrast);
+      --pill-dot: var(--ion-color-secondary);
+    }
+
+    &--full {
+      --pill-background: var(--app-color-surface);
+      --pill-color: var(--ion-text-color);
+      --pill-dot: var(--ion-color-warning);
+    }
+
+    &--unavailable {
+      --pill-background: var(--app-color-surface);
+      --pill-color: var(--ion-color-medium);
+      --pill-dot: var(--app-color-offline);
+    }
 
     &--selected {
-      border: 3px solid var(--ion-color-dark);
-    }
+      --pill-background: var(--ion-color-secondary);
+      --pill-color: var(--ion-color-secondary-contrast);
+      --pill-dot: var(--ion-color-primary);
+      --pill-border-width: 2px;
 
-    &--success {
-      background: var(--ion-color-success);
-    }
-
-    &--warning {
-      background: var(--ion-color-warning);
-    }
-
-    &--danger {
-      background: var(--ion-color-danger);
-    }
-
-    &--medium {
-      background: var(--ion-color-medium);
+      border: var(--pill-border-width) solid var(--ion-color-primary);
+      transform: translateX(-50%) scale(1.15);
     }
   }
 
   .user-marker {
-    fill: var(--ion-color-primary);
+    fill: var(--app-color-user-location);
     fill-opacity: 1;
-    stroke: var(--ion-color-light);
+    stroke: #ffffff;
     stroke-width: 3;
   }
 }

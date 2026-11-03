@@ -1,0 +1,150 @@
+:host {
+  display: block;
+}
+
+.card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  width: 100%;
+  padding: 16px;
+  border: 0;
+  border-radius: var(--app-radius-card);
+  background: var(--app-color-surface);
+  box-shadow: 0 0 0 1px var(--app-color-border);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: 0 0 0 1.5px var(--ion-color-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ion-color-primary);
+    outline-offset: 2px;
+  }
+}
+
+.heading {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.title {
+  min-width: 0;
+
+  h2,
+  p {
+    margin: 0;
+    overflow: hidden;
+  }
+
+  h2 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  p {
+    margin-top: 3px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--ion-color-medium);
+    font-size: 13px;
+  }
+}
+
+.distance {
+  flex: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.status {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.bar {
+  display: flex;
+  flex: none;
+  gap: 2px;
+  width: 84px;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 4px;
+
+  span {
+    flex-basis: 0;
+  }
+}
+
+.status-label {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.power {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: 8px;
+  background: var(--app-color-soft);
+  font-size: 11px;
+  font-weight: 600;
+
+  .mono {
+    font-size: 14px;
+  }
+
+  &.fast {
+    background: var(--ion-color-primary);
+    color: var(--ion-color-secondary);
+  }
+}
+
+.fast-label {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  padding-right: 8px;
+  border-right: 1px solid rgb(255 255 255 / 20%);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px solid var(--app-color-soft);
+}
+
+.tag {
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--app-color-soft);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.access {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-left: auto;
+  color: var(--ion-color-medium);
+}
