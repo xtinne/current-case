@@ -11,6 +11,8 @@
   <div class="ion-padding ion-text-center">
     <ion-spinner />
   </div>
+} @else if (hasError()) {
+  <app-load-error message="Couldn't load the station details." (retry)="retry()" />
 } @else if (station(); as station) {
   <div class="ion-padding">
     <p>{{ address() }}</p>

@@ -7,7 +7,5 @@
       <p>{{ station().maxPowerKw }} kW · {{ connectorTypes() }}</p>
     }
   </ion-label>
-  @if (distance(); as distance) {
-    <ion-note slot="end">{{ distance }}</ion-note>
-  }
+  <ion-note slot="end">{{ distance() }}</ion-note>
 </ion-item>

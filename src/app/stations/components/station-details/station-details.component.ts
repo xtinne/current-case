@@ -18,6 +18,7 @@ import {
 import { addIcons } from 'ionicons';
 import { arrowBack, call, globe, mail, navigate } from 'ionicons/icons';
 
+import { LoadErrorComponent } from '@/app/stations/components/load-error/load-error.component';
 import { StationBadgesComponent } from '@/app/stations/components/station-badges/station-badges.component';
 import type { ChargerStatus } from '@/app/stations/data/station.model';
 import { StationService } from '@/app/stations/data/station.service';
@@ -49,6 +50,7 @@ const CHARGER_STATUSES: Record<ChargerStatus, { label: string; color: string }> 
     IonNote,
     IonSpinner,
     StationBadgesComponent,
+    LoadErrorComponent,
   ],
 })
 export class StationDetailsComponent {
@@ -64,8 +66,10 @@ export class StationDetailsComponent {
     stream: ({ params: id }) => this.stationService.getStationDetails(id),
   });
 
-  readonly station = computed(() => this.details.value());
-  readonly isLoading = computed(() => this.details.isLoading());
+  // value() throws while the resource is in an error state.
+  readonly station = computed(() => (this.details.hasValue() ? this.details.value() : undefined));
+  readonly isLoading = this.details.isLoading;
+  readonly hasError = computed(() => this.details.error() !== undefined);
 
   readonly badgeStation = computed(() => {
     const station = this.station();
@@ -87,5 +91,9 @@ export class StationDetailsComponent {
 
   constructor() {
     addIcons({ arrowBack, navigate, call, mail, globe });
+  }
+
+  retry(): void {
+    this.details.reload();
   }
 }

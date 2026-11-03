@@ -30,18 +30,30 @@
             <ion-label>Nearby stations</ion-label>
           </ion-list-header>
 
-          @if (location()?.isFallback) {
+          @if (isLoadingStations()) {
+            <div class="ion-padding ion-text-center">
+              <ion-spinner />
+            </div>
+          } @else if (hasStationsError()) {
+            <app-load-error message="Couldn't load charging stations." (retry)="reloadStations()" />
+          } @else if (stations().length === 0) {
             <ion-text color="medium">
-              <p class="ion-padding-horizontal">Your location is unavailable. Showing stations near Oslo centre.</p>
+              <p class="ion-padding ion-text-center">No charging stations found.</p>
             </ion-text>
-          }
+          } @else {
+            @if (location()?.isFallback) {
+              <ion-text color="medium">
+                <p class="ion-padding-horizontal">Your location is unavailable. Showing stations near Oslo centre.</p>
+              </ion-text>
+            }
 
-          @for (item of stationsByDistance(); track item.station.id) {
-            <app-station-list-item
-              [station]="item.station"
-              [distanceKm]="item.distanceKm"
-              (click)="openStation(item.station)"
-            />
+            @for (item of stationsByDistance(); track item.station.id) {
+              <app-station-list-item
+                [station]="item.station"
+                [distanceKm]="item.distanceKm"
+                (click)="openStation(item.station)"
+              />
+            }
           }
         </ion-list>
       </div>

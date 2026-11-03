@@ -14,8 +14,7 @@ import { formatDistance } from '@/app/stations/utils/distance';
 })
 export class StationListItemComponent {
   readonly station = input.required<Station>();
-  // Null while the user's location is still unknown.
-  readonly distanceKm = input<number | null>(null);
+  readonly distanceKm = input.required<number>();
 
   readonly address = computed(() => formatAddress(this.station()));
 
@@ -25,8 +24,5 @@ export class StationListItemComponent {
       .join(' · '),
   );
 
-  readonly distance = computed(() => {
-    const distanceKm = this.distanceKm();
-    return distanceKm === null ? null : formatDistance(distanceKm);
-  });
+  readonly distance = computed(() => formatDistance(this.distanceKm()));
 }

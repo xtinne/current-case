@@ -8,7 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { rxResource } from '@angular/core/rxjs-interop';
 import {
   IonContent,
   IonHeader,
@@ -16,11 +16,13 @@ import {
   IonList,
   IonListHeader,
   IonModal,
+  IonSpinner,
   IonText,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
 
+import { LoadErrorComponent } from '@/app/stations/components/load-error/load-error.component';
 import { StationDetailsComponent } from '@/app/stations/components/station-details/station-details.component';
 import { StationListItemComponent } from '@/app/stations/components/station-list-item/station-list-item.component';
 import { StationMapComponent } from '@/app/stations/components/station-map/station-map.component';
@@ -46,6 +48,8 @@ const SHEET_BREAKPOINTS = { collapsed: 0.15, half: 0.5, full: 1 };
     IonListHeader,
     IonLabel,
     IonText,
+    IonSpinner,
+    LoadErrorComponent,
     StationMapComponent,
     StationListItemComponent,
     StationDetailsComponent,
@@ -62,18 +66,17 @@ export class StationsPage {
   readonly sheetBreakpoints = Object.values(SHEET_BREAKPOINTS);
   readonly sheetInitialBreakpoint = SHEET_BREAKPOINTS.half;
 
-  readonly stations = toSignal(this.stationService.getStations(), { initialValue: [] });
+  private readonly stationsResource = rxResource({ stream: () => this.stationService.getStations() });
+
+  readonly stations = computed(() => (this.stationsResource.hasValue() ? this.stationsResource.value() : []));
   readonly location = signal<UserLocation | null>(null);
+  readonly isLoadingStations = computed(() => this.stationsResource.isLoading() || this.location() === null);
+  readonly hasStationsError = computed(() => this.stationsResource.error() !== undefined);
   readonly selectedStation = signal<Station | null>(null);
 
-  // Unsorted, without distances, until the location is known.
   readonly stationsByDistance = computed(() => {
     const location = this.location();
-    const stations = this.stations();
-
-    return location
-      ? sortByDistance(stations, location.position)
-      : stations.map((station) => ({ station, distanceKm: null }));
+    return location ? sortByDistance(this.stations(), location.position) : [];
   });
 
   constructor() {
@@ -97,5 +100,9 @@ export class StationsPage {
   closeStation(): void {
     this.selectedStation.set(null);
     afterNextRender(() => this.sheetContent()?.scrollToPoint(0, this.listScrollTop), { injector: this.injector });
+  }
+
+  reloadStations(): void {
+    this.stationsResource.reload();
   }
 }
