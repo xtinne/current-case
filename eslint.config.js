@@ -10,6 +10,22 @@ module.exports = defineConfig([
   ionic,
   {
     files: ['**/*.ts'],
+    settings: {
+      'import-x/internal-regex': '^@/',
+    },
+    rules: {
+      'import-x/order': [
+        'error',
+        {
+          alphabetize: { order: 'asc', caseInsensitive: false },
+          groups: [['builtin', 'external'], 'internal', 'parent', ['sibling', 'index']],
+          'newlines-between': 'always',
+        },
+      ],
+    },
+  },
+  {
+    files: ['**/*.ts'],
     extends: [angular.configs.tsRecommended],
     processor: angular.processInlineTemplates,
     rules: {
