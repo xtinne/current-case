@@ -1,0 +1,41 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Find a charger</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <app-station-map
+    [stations]="stations()"
+    [userPosition]="location()?.position ?? null"
+    [coveredBottomRatio]="sheetInitialBreakpoint"
+  />
+</ion-content>
+
+<ion-modal
+  [isOpen]="true"
+  [breakpoints]="sheetBreakpoints"
+  [initialBreakpoint]="sheetInitialBreakpoint"
+  [backdropBreakpoint]="sheetInitialBreakpoint"
+  [canDismiss]="false"
+>
+  <ng-template>
+    <ion-content>
+      <ion-list>
+        <ion-list-header>
+          <ion-label>Nearby stations</ion-label>
+        </ion-list-header>
+
+        @if (location()?.isFallback) {
+          <ion-text color="medium">
+            <p class="ion-padding-horizontal">Your location is unavailable. Showing stations near Oslo centre.</p>
+          </ion-text>
+        }
+
+        @for (item of stationsByDistance(); track item.station.id) {
+          <app-station-list-item [station]="item.station" [distanceKm]="item.distanceKm" />
+        }
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-modal>

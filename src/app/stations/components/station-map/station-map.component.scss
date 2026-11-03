@@ -1,0 +1,37 @@
+app-station-map {
+  display: block;
+  height: 100%;
+
+  .station-map {
+    height: 100%;
+  }
+
+  .station-marker {
+    border: 2px solid var(--ion-color-light);
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 40%);
+
+    &--success {
+      background: var(--ion-color-success);
+    }
+
+    &--warning {
+      background: var(--ion-color-warning);
+    }
+
+    &--danger {
+      background: var(--ion-color-danger);
+    }
+
+    &--medium {
+      background: var(--ion-color-medium);
+    }
+  }
+
+  .user-marker {
+    fill: var(--ion-color-primary);
+    fill-opacity: 1;
+    stroke: var(--ion-color-light);
+    stroke-width: 3;
+  }
+}

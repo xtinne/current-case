@@ -2,17 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { IonBadge, IonItem, IonLabel, IonNote } from '@ionic/angular';
 
 import type { Station, StationAccess } from '@/app/stations/data/station.model';
-import type { Availability } from '@/app/stations/utils/availability';
-import { getAvailability } from '@/app/stations/utils/availability';
+import { AVAILABILITY_COLORS, getAvailability } from '@/app/stations/utils/availability';
 import { formatDistance } from '@/app/stations/utils/distance';
-
-const AVAILABILITY_COLORS: Record<Availability, string> = {
-  available: 'success',
-  full: 'warning',
-  'out-of-order': 'danger',
-  closed: 'medium',
-  'no-chargers': 'medium',
-};
 
 const ACCESS_LABELS: Record<StationAccess, string | null> = {
   public: null,
