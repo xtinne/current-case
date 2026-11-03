@@ -8,6 +8,7 @@ import {
   effect,
   inject,
   input,
+  output,
   signal,
   viewChild,
 } from '@angular/core';
@@ -31,7 +32,9 @@ const DEFAULT_ZOOM = 13;
 export class StationMapComponent {
   readonly stations = input.required<Station[]>();
   readonly userPosition = input<Position | null>(null);
+  readonly selectedStation = input<Station | null>(null);
   readonly coveredBottomRatio = input(0);
+  readonly stationSelected = output<Station>();
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly mapElement = viewChild.required<ElementRef<HTMLDivElement>>('map');
@@ -42,13 +45,21 @@ export class StationMapComponent {
   constructor() {
     afterNextRender(() => this.createMap());
 
-    effect(() => this.showStations(this.stations()));
+    effect(() => this.showStations(this.stations(), this.selectedStation()));
 
     effect(() => {
       const map = this.map();
       const position = this.userPosition();
       if (map && position) {
         this.showUserPosition(map, position);
+      }
+    });
+
+    effect(() => {
+      const map = this.map();
+      const station = this.selectedStation();
+      if (map && station) {
+        this.centerOn(map, station.position);
       }
     });
   }
@@ -59,7 +70,9 @@ export class StationMapComponent {
 
     tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(leafletMap);
+    leafletMap.attributionControl.setPosition('topright');
     this.stationLayer.addTo(leafletMap);
     this.userLayer.addTo(leafletMap);
 
@@ -74,24 +87,30 @@ export class StationMapComponent {
     this.map.set(leafletMap);
   }
 
-  private showStations(stations: Station[]): void {
+  private showStations(stations: Station[], selected: Station | null): void {
     this.stationLayer.clearLayers();
 
     for (const station of stations) {
       const color = AVAILABILITY_COLORS[getAvailability(station)];
+      const isSelected = station.id === selected?.id;
       const icon = divIcon({
-        className: `station-marker station-marker--${color}`,
-        iconSize: [18, 18],
+        className: `station-marker station-marker--${color}${isSelected ? ' station-marker--selected' : ''}`,
+        iconSize: isSelected ? [28, 28] : [18, 18],
       });
 
-      marker(station.position, { icon, title: station.name }).addTo(this.stationLayer);
+      marker(station.position, { icon, title: station.name, zIndexOffset: isSelected ? 1000 : 0 })
+        .on('click', () => this.stationSelected.emit(station))
+        .addTo(this.stationLayer);
     }
   }
 
   private showUserPosition(map: LeafletMap, position: Position): void {
     this.userLayer.clearLayers();
     circleMarker(position, { radius: 8, className: 'user-marker' }).addTo(this.userLayer);
+    this.centerOn(map, position);
+  }
 
+  private centerOn(map: LeafletMap, position: Position): void {
     const coveredHeight = map.getSize().y * this.coveredBottomRatio();
     map.fitBounds(latLngBounds([position, position]), {
       paddingBottomRight: [0, coveredHeight],

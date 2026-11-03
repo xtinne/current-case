@@ -28,3 +28,35 @@ export interface Station {
   };
   connectors: Connector[];
 }
+
+export type ChargerStatus = 'available' | 'in-use' | 'out-of-order';
+
+export interface Charger {
+  id: number;
+  name: string;
+  status: ChargerStatus;
+  maxPowerKw: number;
+  connectorTypes: string[];
+}
+
+export interface StationDetails {
+  id: number;
+  name: string;
+  address: string;
+  town: string;
+  position: Position;
+  isOpen: boolean;
+  access: StationAccess;
+  chargers: Charger[];
+  price: {
+    perKwh: number;
+    startFee: number;
+    vatPercent: number;
+    currency: string;
+  };
+  support: {
+    phone: string;
+    email: string;
+    website: string;
+  };
+}

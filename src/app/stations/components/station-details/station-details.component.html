@@ -1,0 +1,85 @@
+<ion-toolbar>
+  <ion-buttons slot="start">
+    <ion-button aria-label="Back to list" (click)="back.emit()">
+      <ion-icon slot="icon-only" name="arrow-back" />
+    </ion-button>
+  </ion-buttons>
+  <ion-title>{{ station()?.name }}</ion-title>
+</ion-toolbar>
+
+@if (isLoading()) {
+  <div class="ion-padding ion-text-center">
+    <ion-spinner />
+  </div>
+} @else if (station(); as station) {
+  <div class="ion-padding">
+    <p>{{ address() }}</p>
+    @if (badgeStation(); as badgeStation) {
+      <app-station-badges [station]="badgeStation" />
+    }
+    @if (directionsUrl(); as directionsUrl) {
+      <ion-button expand="block" class="ion-margin-top" [href]="directionsUrl" target="_blank" rel="noopener">
+        <ion-icon slot="start" name="navigate" />
+        Navigate
+      </ion-button>
+    }
+  </div>
+
+  <ion-list>
+    <ion-list-header>
+      <ion-label>Chargers</ion-label>
+    </ion-list-header>
+    @for (charger of station.chargers; track charger.id) {
+      <ion-item>
+        <ion-label>
+          <h3>{{ charger.name }}</h3>
+          <p>{{ charger.maxPowerKw }} kW · {{ charger.connectorTypes.join(' · ') }}</p>
+        </ion-label>
+        <ion-badge slot="end" [color]="chargerStatuses[charger.status].color">
+          {{ chargerStatuses[charger.status].label }}
+        </ion-badge>
+      </ion-item>
+    }
+  </ion-list>
+
+  <ion-list>
+    <ion-list-header>
+      <ion-label>Price</ion-label>
+    </ion-list-header>
+    <ion-item>
+      <ion-label>Charging</ion-label>
+      <ion-note slot="end">{{ station.price.perKwh | number: '1.2-2' }} {{ station.price.currency }}/kWh</ion-note>
+    </ion-item>
+    <ion-item>
+      <ion-label>Start fee</ion-label>
+      <ion-note slot="end">
+        @if (station.price.startFee > 0) {
+          {{ station.price.startFee | number: '1.2-2' }} {{ station.price.currency }}
+        } @else {
+          None
+        }
+      </ion-note>
+    </ion-item>
+    <ion-item lines="none">
+      <ion-note>Prices include {{ station.price.vatPercent }}% VAT.</ion-note>
+    </ion-item>
+  </ion-list>
+
+  <ion-list>
+    <ion-list-header>
+      <ion-label>Support</ion-label>
+    </ion-list-header>
+    <ion-item [href]="phoneUrl()">
+      <ion-icon slot="start" name="call" />
+      <ion-label>{{ station.support.phone }}</ion-label>
+    </ion-item>
+    <ion-item [href]="'mailto:' + station.support.email">
+      <ion-icon slot="start" name="mail" />
+      <ion-label>{{ station.support.email }}</ion-label>
+    </ion-item>
+    <ion-item [href]="station.support.website" target="_blank" rel="noopener">
+      <ion-icon slot="start" name="globe" />
+      <ion-label>Website</ion-label>
+    </ion-item>
+  </ion-list>
+}

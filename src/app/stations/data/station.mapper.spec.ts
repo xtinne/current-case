@@ -1,5 +1,5 @@
-import type { ApiStation } from './station-api.models';
-import { mapStation, mapStationAccess } from './station.mapper';
+import type { ApiStation, ApiStationDetails } from './station-api.models';
+import { mapChargerStatus, mapStation, mapStationAccess, mapStationDetails } from './station.mapper';
 
 const apiStation: ApiStation = {
   PK_ChargingStationID: 900110,
@@ -20,6 +20,49 @@ const apiStation: ApiStation = {
   ],
   ChargingStationType: 'Public',
 };
+
+const apiStationDetails: ApiStationDetails = {
+  Name: 'Fjordtunet Hurtiglader',
+  Address: 'Testgata 28',
+  Town: 'Oslo',
+  Latitude: 59.932795,
+  Longitude: 10.655307,
+  IsOpen: true,
+  ChargingStationType: 'Public',
+  ChargingPoints: [
+    {
+      PK_ChargePointID: 990001,
+      Name: 'DC 1',
+      CurrentStatus: 'Charging',
+      MaxKW: 150,
+      ConnectorTypes: [{ Name: 'CCS2' }, { Name: 'CHAdeMO' }],
+    },
+  ],
+  Summary: {
+    PricingNow: { ChargingCostKWH: 3.9, StartupCostPrice: 0, CostPriceVATPercentage: 25, Currency: 'NOK' },
+  },
+  SupportInformation: {
+    PhoneNumberString: '+47 000 00 000',
+    SupportEmail: 'support@example.com',
+    SupportWebsite: 'https://example.com',
+  },
+};
+
+describe('mapChargerStatus', () => {
+  it.each([
+    ['Available', 'available'],
+    ['Charging', 'in-use'],
+    ['SuspendedEV', 'in-use'],
+    ['Faulted', 'out-of-order'],
+    ['Offline', 'out-of-order'],
+  ])('maps %s to %s', (apiStatus, expected) => {
+    expect(mapChargerStatus(apiStatus)).toBe(expected);
+  });
+
+  it('treats an unknown status as out of order', () => {
+    expect(mapChargerStatus('SomethingNew')).toBe('out-of-order');
+  });
+});
 
 describe('mapStationAccess', () => {
   it.each([
@@ -66,5 +109,25 @@ describe('mapStation', () => {
 
     expect(station.chargers).toEqual({ total: 0, available: 0, occupied: 0, offline: 0 });
     expect(station.connectors).toEqual([]);
+  });
+});
+
+describe('mapStationDetails', () => {
+  it('uses the ID from the station list, since the response has none', () => {
+    expect(mapStationDetails(apiStationDetails, 123).id).toBe(123);
+  });
+
+  it('maps chargers, price and support', () => {
+    const details = mapStationDetails(apiStationDetails, 900110);
+
+    expect(details.chargers).toEqual([
+      { id: 990001, name: 'DC 1', status: 'in-use', maxPowerKw: 150, connectorTypes: ['CCS2', 'CHAdeMO'] },
+    ]);
+    expect(details.price).toEqual({ perKwh: 3.9, startFee: 0, vatPercent: 25, currency: 'NOK' });
+    expect(details.support).toEqual({
+      phone: '+47 000 00 000',
+      email: 'support@example.com',
+      website: 'https://example.com',
+    });
   });
 });

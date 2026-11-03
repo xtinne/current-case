@@ -8,7 +8,9 @@
   <app-station-map
     [stations]="stations()"
     [userPosition]="location()?.position ?? null"
+    [selectedStation]="selectedStation()"
     [coveredBottomRatio]="sheetInitialBreakpoint"
+    (stationSelected)="openStation($event)"
   />
 </ion-content>
 
@@ -18,24 +20,35 @@
   [initialBreakpoint]="sheetInitialBreakpoint"
   [backdropBreakpoint]="sheetInitialBreakpoint"
   [canDismiss]="false"
+  [expandToScroll]="false"
 >
   <ng-template>
-    <ion-content>
-      <ion-list>
-        <ion-list-header>
-          <ion-label>Nearby stations</ion-label>
-        </ion-list-header>
+    <ion-content #sheetContent>
+      <div [hidden]="selectedStation() !== null">
+        <ion-list>
+          <ion-list-header>
+            <ion-label>Nearby stations</ion-label>
+          </ion-list-header>
 
-        @if (location()?.isFallback) {
-          <ion-text color="medium">
-            <p class="ion-padding-horizontal">Your location is unavailable. Showing stations near Oslo centre.</p>
-          </ion-text>
-        }
+          @if (location()?.isFallback) {
+            <ion-text color="medium">
+              <p class="ion-padding-horizontal">Your location is unavailable. Showing stations near Oslo centre.</p>
+            </ion-text>
+          }
 
-        @for (item of stationsByDistance(); track item.station.id) {
-          <app-station-list-item [station]="item.station" [distanceKm]="item.distanceKm" />
-        }
-      </ion-list>
+          @for (item of stationsByDistance(); track item.station.id) {
+            <app-station-list-item
+              [station]="item.station"
+              [distanceKm]="item.distanceKm"
+              (click)="openStation(item.station)"
+            />
+          }
+        </ion-list>
+      </div>
+
+      @if (selectedStation(); as station) {
+        <app-station-details [stationId]="station.id" (back)="closeStation()" />
+      }
     </ion-content>
   </ng-template>
 </ion-modal>

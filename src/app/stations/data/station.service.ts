@@ -5,9 +5,9 @@ import { map } from 'rxjs';
 
 import { environment } from '@/environments/environment';
 
-import type { ApiResponse, ApiStation } from './station-api.models';
-import { mapStation } from './station.mapper';
-import type { Station } from './station.model';
+import type { ApiResponse, ApiStation, ApiStationDetails } from './station-api.models';
+import { mapStation, mapStationDetails } from './station.mapper';
+import type { Station, StationDetails } from './station.model';
 
 @Injectable({ providedIn: 'root' })
 export class StationService {
@@ -17,5 +17,12 @@ export class StationService {
     return this.http
       .get<ApiResponse<ApiStation[]>>(environment.stationsUrl)
       .pipe(map((response) => response.Result.map(mapStation)));
+  }
+
+  // The mock endpoint returns the same station for every ID.
+  getStationDetails(id: number): Observable<StationDetails> {
+    return this.http
+      .get<ApiResponse<ApiStationDetails>>(environment.stationDetailsUrl)
+      .pipe(map((response) => mapStationDetails(response.Result, id)));
   }
 }

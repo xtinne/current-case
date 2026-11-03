@@ -1,36 +1,23 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { IonBadge, IonItem, IonLabel, IonNote } from '@ionic/angular';
+import { IonItem, IonLabel, IonNote } from '@ionic/angular';
 
-import type { Station, StationAccess } from '@/app/stations/data/station.model';
-import { AVAILABILITY_COLORS, getAvailability } from '@/app/stations/utils/availability';
+import { StationBadgesComponent } from '@/app/stations/components/station-badges/station-badges.component';
+import type { Station } from '@/app/stations/data/station.model';
+import { formatAddress } from '@/app/stations/utils/address';
 import { formatDistance } from '@/app/stations/utils/distance';
-
-const ACCESS_LABELS: Record<StationAccess, string | null> = {
-  public: null,
-  apartment: 'Residents only',
-  private: 'Private',
-};
 
 @Component({
   selector: 'app-station-list-item',
   templateUrl: 'station-list-item.component.html',
-  styleUrl: 'station-list-item.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonItem, IonLabel, IonBadge, IonNote],
+  imports: [IonItem, IonLabel, IonNote, StationBadgesComponent],
 })
 export class StationListItemComponent {
   readonly station = input.required<Station>();
   // Null while the user's location is still unknown.
   readonly distanceKm = input<number | null>(null);
 
-  readonly availability = computed(() => getAvailability(this.station()));
-  readonly availabilityColor = computed(() => AVAILABILITY_COLORS[this.availability()]);
-  readonly accessLabel = computed(() => ACCESS_LABELS[this.station().access]);
-
-  readonly address = computed(() => {
-    const { address, town } = this.station();
-    return town ? `${address}, ${town}` : address;
-  });
+  readonly address = computed(() => formatAddress(this.station()));
 
   readonly connectorTypes = computed(() =>
     this.station()

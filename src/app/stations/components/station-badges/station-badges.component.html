@@ -1,0 +1,22 @@
+<ion-badge [color]="availabilityColor()">
+  @switch (availability()) {
+    @case ('available') {
+      {{ station().chargers.available }} of {{ station().chargers.total }} available
+    }
+    @case ('full') {
+      Full
+    }
+    @case ('out-of-order') {
+      Out of order
+    }
+    @case ('closed') {
+      Closed
+    }
+    @case ('no-chargers') {
+      No chargers
+    }
+  }
+</ion-badge>
+@if (accessLabel(); as accessLabel) {
+  <ion-badge color="light">{{ accessLabel }}</ion-badge>
+}

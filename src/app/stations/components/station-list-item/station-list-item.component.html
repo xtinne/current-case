@@ -1,31 +1,8 @@
-<ion-item>
+<ion-item button>
   <ion-label>
     <h2>{{ station().name }}</h2>
     <p>{{ address() }}</p>
-    <p>
-      <ion-badge [color]="availabilityColor()">
-        @switch (availability()) {
-          @case ('available') {
-            {{ station().chargers.available }} of {{ station().chargers.total }} available
-          }
-          @case ('full') {
-            Full
-          }
-          @case ('out-of-order') {
-            Out of order
-          }
-          @case ('closed') {
-            Closed
-          }
-          @case ('no-chargers') {
-            No chargers
-          }
-        }
-      </ion-badge>
-      @if (accessLabel(); as accessLabel) {
-        <ion-badge color="light">{{ accessLabel }}</ion-badge>
-      }
-    </p>
+    <p><app-station-badges [station]="station()" /></p>
     @if (station().chargers.total > 0) {
       <p>{{ station().maxPowerKw }} kW · {{ connectorTypes() }}</p>
     }
