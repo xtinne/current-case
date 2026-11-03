@@ -4,4 +4,16 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content></ion-content>
+<ion-content>
+  @if (location()?.isFallback) {
+    <ion-text color="medium">
+      <p class="ion-padding-horizontal">Your location is unavailable. Showing stations near Oslo centre.</p>
+    </ion-text>
+  }
+
+  <ion-list>
+    @for (item of stationsByDistance(); track item.station.id) {
+      <app-station-list-item [station]="item.station" [distanceKm]="item.distanceKm" />
+    }
+  </ion-list>
+</ion-content>
