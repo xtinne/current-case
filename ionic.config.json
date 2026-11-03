@@ -1,0 +1,7 @@
+{
+  "name": "current-case",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
