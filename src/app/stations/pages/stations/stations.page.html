@@ -63,13 +63,13 @@
         } @else if (hasStationsError()) {
           <app-state-message
             icon="cloud-offline-outline"
-            title="Couldn't load charging stations"
+            heading="Couldn't load charging stations"
             message="Check your connection and try again."
             actionLabel="Try again"
             (action)="reloadStations()"
           />
         } @else if (stations().length === 0) {
-          <app-state-message icon="location-outline" title="No charging stations found" />
+          <app-state-message icon="location-outline" heading="No charging stations found" />
         } @else {
           <div class="sheet-header">
             <h2>{{ stationsByDistance().length }} {{ stationsByDistance().length === 1 ? 'station' : 'stations' }}</h2>
@@ -92,7 +92,7 @@
             } @empty {
               <app-state-message
                 icon="search-outline"
-                title="No stations match"
+                heading="No stations match"
                 message="Try fewer filters or a different search."
                 actionLabel="Clear search and filters"
                 (action)="clearSearchAndFilters()"

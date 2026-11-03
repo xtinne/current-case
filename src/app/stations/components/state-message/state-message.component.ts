@@ -12,7 +12,7 @@ import { cloudOfflineOutline, locationOutline, searchOutline } from 'ionicons/ic
 })
 export class StateMessageComponent {
   readonly icon = input.required<string>();
-  readonly title = input.required<string>();
+  readonly heading = input.required<string>();
   readonly message = input<string>();
   readonly actionLabel = input<string>();
   readonly action = output();

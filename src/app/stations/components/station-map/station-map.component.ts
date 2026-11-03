@@ -141,6 +141,8 @@ export class StationMapComponent {
     map.fitBounds(latLngBounds([position, position]), { ...this.visibleAreaPadding(map), maxZoom: DEFAULT_ZOOM });
   }
 
+  // Effects re-run when any signal they read changes. untracked() reads these values without that,
+  // so dragging the sheet doesn't re-centre the map; only a new station or user position does.
   private visibleAreaPadding(map: LeafletMap): Pick<FitBoundsOptions, 'paddingTopLeft' | 'paddingBottomRight'> {
     const coveredBottom = map.getSize().y * untracked(this.coveredBottomRatio);
     return {

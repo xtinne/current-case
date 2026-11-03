@@ -1,6 +1,6 @@
-import type { Charger, Station } from '@/app/stations/data/station.model';
+import type { Station } from '@/app/stations/data/station.model';
 
-import { countChargers, getAvailability } from './availability';
+import { getAvailability } from './availability';
 
 function station(isOpen: boolean, chargers: Station['chargers']): Station {
   return {
@@ -36,21 +36,5 @@ describe('getAvailability', () => {
 
   it('has no chargers when the station has none, even if it is open', () => {
     expect(getAvailability(station(true, { total: 0, available: 0, occupied: 0, offline: 0 }))).toBe('no-chargers');
-  });
-});
-
-describe('countChargers', () => {
-  it('counts chargers per status', () => {
-    const charger = (status: Charger['status']): Charger => ({
-      id: 1,
-      name: 'AC 1',
-      status,
-      maxPowerKw: 22,
-      connectorTypes: ['Type 2'],
-    });
-
-    expect(
-      countChargers([charger('available'), charger('available'), charger('in-use'), charger('out-of-order')]),
-    ).toEqual({ total: 4, available: 2, occupied: 1, offline: 1 });
   });
 });

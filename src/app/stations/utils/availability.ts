@@ -1,8 +1,8 @@
-import type { Charger, Station } from '@/app/stations/data/station.model';
+import type { Station } from '@/app/stations/data/station.model';
 
 export type Availability = 'available' | 'full' | 'out-of-order' | 'closed' | 'no-chargers';
 
-// The order of the checks matters: closed stations should be checked before available ones.
+// The order of the checks matters: a closed station can still report free chargers.
 export function getAvailability(station: Pick<Station, 'isOpen' | 'chargers'>): Availability {
   const { total, available, occupied } = station.chargers;
 
@@ -19,15 +19,4 @@ export function getAvailability(station: Pick<Station, 'isOpen' | 'chargers'>): 
     return 'full';
   }
   return 'out-of-order';
-}
-export function countChargers(chargers: Charger[]): Station['chargers'] {
-  const countWith = (status: Charger['status']): number =>
-    chargers.filter((charger) => charger.status === status).length;
-
-  return {
-    total: chargers.length,
-    available: countWith('available'),
-    occupied: countWith('in-use'),
-    offline: countWith('out-of-order'),
-  };
 }

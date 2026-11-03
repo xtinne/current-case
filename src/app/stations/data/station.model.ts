@@ -37,6 +37,7 @@ export interface Charger {
   status: ChargerStatus;
   maxPowerKw: number;
   connectorTypes: string[];
+  isDc: boolean;
 }
 
 export interface StationDetails {

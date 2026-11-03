@@ -15,6 +15,8 @@ const CHARGER_STATUSES: Record<string, ChargerStatus> = {
   Offline: 'out-of-order',
 };
 
+const DC_CONNECTOR_TYPES = ['CCS2', 'CHAdeMO'];
+
 // Unknown types count as private, so a station is never shown as open to everyone by mistake.
 export function mapStationAccess(type: string): StationAccess {
   return STATION_ACCESS[type] ?? 'private';
@@ -66,13 +68,18 @@ export function mapStationDetails(api: ApiStationDetails, id: number): StationDe
     position: { lat: api.Latitude, lng: api.Longitude },
     isOpen: api.IsOpen,
     access: mapStationAccess(api.ChargingStationType),
-    chargers: api.ChargingPoints.map((point) => ({
-      id: point.PK_ChargePointID,
-      name: point.Name,
-      status: mapChargerStatus(point.CurrentStatus),
-      maxPowerKw: point.MaxKW,
-      connectorTypes: point.ConnectorTypes.map((connector) => mapConnectorType(connector.Name)),
-    })),
+    chargers: api.ChargingPoints.map((point) => {
+      const connectorTypes = point.ConnectorTypes.map((connector) => mapConnectorType(connector.Name));
+      return {
+        id: point.PK_ChargePointID,
+        name: point.Name,
+        status: mapChargerStatus(point.CurrentStatus),
+        maxPowerKw: point.MaxKW,
+        connectorTypes,
+        // The API has no AC/DC field, so it comes from the plug type.
+        isDc: connectorTypes.some((type) => DC_CONNECTOR_TYPES.includes(type)),
+      };
+    }),
     price: {
       perKwh: pricing.ChargingCostKWH,
       startFee: pricing.StartupCostPrice,

@@ -7,7 +7,7 @@
           @if (charger.maxPowerKw >= fastChargingMinKw) {
             <ion-icon name="flash" aria-hidden="true" />
           }
-          kW {{ charger.maxPowerKw >= fastChargingMinKw ? 'DC' : 'AC' }}
+          kW {{ charger.isDc ? 'DC' : 'AC' }}
         </span>
       </span>
       <span class="charger-name">

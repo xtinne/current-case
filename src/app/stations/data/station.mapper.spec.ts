@@ -37,6 +37,13 @@ const apiStationDetails: ApiStationDetails = {
       MaxKW: 150,
       ConnectorTypes: [{ Name: 'CCS2' }, { Name: 'CHAdeMO' }],
     },
+    {
+      PK_ChargePointID: 990003,
+      Name: 'AC 1',
+      CurrentStatus: 'Available',
+      MaxKW: 22,
+      ConnectorTypes: [{ Name: 'Type - 2' }],
+    },
   ],
   Summary: {
     PricingNow: { ChargingCostKWH: 3.9, StartupCostPrice: 0, CostPriceVATPercentage: 25, Currency: 'NOK' },
@@ -121,7 +128,8 @@ describe('mapStationDetails', () => {
     const details = mapStationDetails(apiStationDetails, 900110);
 
     expect(details.chargers).toEqual([
-      { id: 990001, name: 'DC 1', status: 'in-use', maxPowerKw: 150, connectorTypes: ['CCS2', 'CHAdeMO'] },
+      { id: 990001, name: 'DC 1', status: 'in-use', maxPowerKw: 150, connectorTypes: ['CCS2', 'CHAdeMO'], isDc: true },
+      { id: 990003, name: 'AC 1', status: 'available', maxPowerKw: 22, connectorTypes: ['Type 2'], isDc: false },
     ]);
     expect(details.price).toEqual({ perKwh: 3.9, startFee: 0, vatPercent: 25, currency: 'NOK' });
     expect(details.support).toEqual({
